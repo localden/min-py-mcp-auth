@@ -1,14 +1,3 @@
-"""MCP Resource Server with Token Introspection.
-
-This server validates tokens via Authorization Server introspection and serves
-MCP resources.
-
-Demonstrates RFC 9728 Protected Resource Metadata for AS/RS separation.
-
-NOTE: this is a simplified example for demonstration purposes.
-This is not a production-ready implementation.
-"""
-
 import datetime
 import logging
 from typing import Any
@@ -40,14 +29,11 @@ def create_oauth_urls() -> dict[str, str]:
 
 def create_server() -> FastMCP:
     """Create and configure the FastMCP server."""
-    
-    # Validate configuration
+
     config.validate()
     
-    # Create OAuth URLs
     oauth_urls = create_oauth_urls()
     
-    # Create token verifier for introspection
     token_verifier = IntrospectionTokenVerifier(
         introspection_endpoint=oauth_urls["introspection_endpoint"],
         server_url=config.server_url,
@@ -62,7 +48,6 @@ def create_server() -> FastMCP:
         config.OAUTH_STRICT
     )
     
-    # Create FastMCP server as a Resource Server
     app = FastMCP(
         name="MCP Resource Server",
         instructions="Resource Server that validates tokens via Authorization Server introspection",
@@ -133,7 +118,6 @@ def main() -> int:
     logging.basicConfig(level=logging.INFO)
     
     try:
-        # Validate configuration
         config.validate()
         
         oauth_urls = create_oauth_urls()
@@ -144,10 +128,9 @@ def main() -> int:
         return 1
     
     try:
-        # Create and run the server
         mcp_server = create_server()
         
-        logger.info("Starting MCP Resource Server on %s:%s", config.HOST, config.PORT)
+        logger.info("Starting MCP Server on %s:%s", config.HOST, config.PORT)
         logger.info("Authorization Server: %s", oauth_urls["issuer"])
         logger.info("Transport: %s", config.TRANSPORT)
 
