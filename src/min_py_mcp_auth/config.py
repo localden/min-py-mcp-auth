@@ -18,7 +18,7 @@ class Config:
     
     # OAuth client settings
     OAUTH_CLIENT_ID: str = os.getenv("OAUTH_CLIENT_ID", "mcp-server")
-    OAUTH_CLIENT_SECRET: str = os.getenv("OAUTH_CLIENT_SECRET", "WfDimJZECxPNWi2FLZGmpcvypFmQRKut")
+    OAUTH_CLIENT_SECRET: str = os.getenv("OAUTH_CLIENT_SECRET", "UO3rmozkFFkXr0QxPTkzZ0LMXDidIikB")
     
     # Server settings
     MCP_SCOPE: str = os.getenv("MCP_SCOPE", "mcp:tools")

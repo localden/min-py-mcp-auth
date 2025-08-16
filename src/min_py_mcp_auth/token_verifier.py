@@ -54,14 +54,26 @@ class IntrospectionTokenVerifier(TokenVerifier):
             verify=True,  # Enforce SSL verification
         ) as client:
             try:
+                # Prepare request components
+                form_data = {
+                    "token": token,
+                    "client_id": self.client_id,
+                    "client_secret": self.client_secret,
+                }
+                headers = {"Content-Type": "application/x-www-form-urlencoded"}
+
+                # Log full request (no redaction) - WARNING: exposes sensitive secrets in logs
+                logger.debug(
+                    "Introspection request -> POST %s headers=%s body=%s",
+                    self.introspection_endpoint,
+                    headers,
+                    form_data,
+                )
+
                 response = await client.post(
                     self.introspection_endpoint,
-                    data={
-                        "token": token,
-                        "client_id": self.client_id,
-                        "client_secret": self.client_secret,
-                    },
-                    headers={"Content-Type": "application/x-www-form-urlencoded"},
+                    data=form_data,
+                    headers=headers,
                 )
                 
                 if response.status_code != 200:

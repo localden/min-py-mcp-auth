@@ -115,7 +115,7 @@ def main() -> int:
     
     Configuration is loaded from config.py and environment variables.
     """
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.DEBUG)
     
     try:
         config.validate()
