@@ -40,11 +40,6 @@ def create_server() -> FastMCP:
         client_id=config.OAUTH_CLIENT_ID,
         client_secret=config.OAUTH_CLIENT_SECRET,
     )
-
-    logger.info(
-        "Creating MCP Resource Server with auth server at %s (audience validation enforced)",
-        oauth_urls["issuer"],
-    )
     
     app = FastMCP(
         name="MCP Resource Server",
@@ -113,16 +108,14 @@ def main() -> int:
     
     Configuration is loaded from config.py and environment variables.
     """
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.INFO)
     
     try:
         config.validate()
-        
         oauth_urls = create_oauth_urls()
         
     except ValueError as e:
         logger.error("Configuration error: %s", e)
-        logger.error("Make sure to provide valid configuration parameters")
         return 1
     
     try:
@@ -133,8 +126,6 @@ def main() -> int:
         logger.info("Transport: %s", config.TRANSPORT)
 
         mcp_server.run(transport=config.TRANSPORT)
-        
-        logger.info("Server stopped")
         return 0
         
     except Exception:

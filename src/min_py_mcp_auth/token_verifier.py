@@ -30,36 +30,24 @@ class IntrospectionTokenVerifier(TokenVerifier):
         """Verify token via introspection endpoint."""
         import httpx
 
-        # Validate URL to prevent SSRF attacks
         if not self.introspection_endpoint.startswith(("https://", "http://localhost", "http://127.0.0.1")):
-            logger.warning(f"Rejecting introspection endpoint with unsafe scheme: {self.introspection_endpoint}")
             return None
 
-        # Configure secure HTTP client
         timeout = httpx.Timeout(10.0, connect=5.0)
         limits = httpx.Limits(max_connections=10, max_keepalive_connections=5)
         
         async with httpx.AsyncClient(
             timeout=timeout,
             limits=limits,
-            verify=True,  # Enforce SSL verification
+            verify=True,
         ) as client:
             try:
-                # Prepare request components
                 form_data = {
                     "token": token,
                     "client_id": self.client_id,
                     "client_secret": self.client_secret,
                 }
                 headers = {"Content-Type": "application/x-www-form-urlencoded"}
-
-                # Log full request (no redaction) - WARNING: exposes sensitive secrets in logs
-                logger.debug(
-                    "Introspection request -> POST %s headers=%s body=%s",
-                    self.introspection_endpoint,
-                    headers,
-                    form_data,
-                )
 
                 response = await client.post(
                     self.introspection_endpoint,
@@ -68,19 +56,13 @@ class IntrospectionTokenVerifier(TokenVerifier):
                 )
                 
                 if response.status_code != 200:
-                    logger.debug(f"Token introspection returned status {response.status_code}")
                     return None
 
                 data = response.json()
                 if not data.get("active", False):
                     return None
 
-                # Enforce audience/resource validation (always on)
                 if not self._validate_resource(data):
-                    logger.warning(
-                        "Token audience/resource validation failed. Expected audience including: %s", 
-                        self.resource_url,
-                    )
                     return None
 
                 return AccessToken(
@@ -92,7 +74,6 @@ class IntrospectionTokenVerifier(TokenVerifier):
                 )
 
             except Exception as e:
-                logger.warning(f"Token introspection failed: {e}")
                 return None
 
     def _validate_resource(self, token_data: dict[str, Any]) -> bool:
