@@ -11,13 +11,6 @@ logger = logging.getLogger(__name__)
 
 class IntrospectionTokenVerifier(TokenVerifier):
     """Token verifier that uses OAuth 2.0 Token Introspection (RFC 7662).
-    
-    This is a simple implementation for demonstration purposes.
-    Production implementations should consider:
-    - Connection pooling and reuse
-    - More sophisticated error handling  
-    - Rate limiting and retry logic
-    - Comprehensive configuration options
     """
 
     def __init__(
@@ -26,13 +19,11 @@ class IntrospectionTokenVerifier(TokenVerifier):
         server_url: str,
         client_id: str,
         client_secret: str,
-        validate_resource: bool = False,
     ):
         self.introspection_endpoint = introspection_endpoint
         self.server_url = server_url
         self.client_id = client_id
         self.client_secret = client_secret
-        self.validate_resource = validate_resource
         self.resource_url = resource_url_from_server_url(server_url)
 
     async def verify_token(self, token: str) -> AccessToken | None:
@@ -84,9 +75,12 @@ class IntrospectionTokenVerifier(TokenVerifier):
                 if not data.get("active", False):
                     return None
 
-                # RFC 8707 resource validation (only when --oauth-strict is set)
-                if self.validate_resource and not self._validate_resource(data):
-                    logger.warning(f"Token resource validation failed. Expected: {self.resource_url}")
+                # Enforce audience/resource validation (always on)
+                if not self._validate_resource(data):
+                    logger.warning(
+                        "Token audience/resource validation failed. Expected audience including: %s", 
+                        self.resource_url,
+                    )
                     return None
 
                 return AccessToken(
@@ -102,26 +96,23 @@ class IntrospectionTokenVerifier(TokenVerifier):
                 return None
 
     def _validate_resource(self, token_data: dict[str, Any]) -> bool:
-        """Validate token was issued for this resource server."""
-        if not self.server_url or not self.resource_url:
-            return False  # Fail if strict validation requested but URLs missing
+        """Validate token was issued for this resource server.
 
-        # Check 'aud' claim first (standard JWT audience)
+        Rules:
+        - Reject if 'aud' missing.
+        - Accept if any audience entry matches the derived resource URL.
+        - Supports string or list forms per JWT spec.
+        """
+        if not self.server_url or not self.resource_url:
+            return False
+
         aud: list[str] | str | None = token_data.get("aud")
         if isinstance(aud, list):
-            for audience in aud:
-                if self._is_valid_resource(audience):
-                    return True
-            return False
-        elif aud:
+            return any(self._is_valid_resource(a) for a in aud)
+        if isinstance(aud, str):
             return self._is_valid_resource(aud)
-
-        # No resource binding - invalid per RFC 8707
         return False
 
     def _is_valid_resource(self, resource: str) -> bool:
         """Check if the given resource matches our server."""
-        return check_resource_allowed(
-            resource_url=self.resource_url,
-            configured_resource=resource
-        )
+        return check_resource_allowed(self.resource_url, resource)

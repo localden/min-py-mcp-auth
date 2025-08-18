@@ -39,13 +39,11 @@ def create_server() -> FastMCP:
         server_url=config.server_url,
         client_id=config.OAUTH_CLIENT_ID,
         client_secret=config.OAUTH_CLIENT_SECRET,
-        validate_resource=config.OAUTH_STRICT,
     )
-    
+
     logger.info(
-        "Creating MCP Resource Server with auth server at %s (strict validation: %s)",
+        "Creating MCP Resource Server with auth server at %s (audience validation enforced)",
         oauth_urls["issuer"],
-        config.OAUTH_STRICT
     )
     
     app = FastMCP(

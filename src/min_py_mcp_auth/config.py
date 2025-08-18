@@ -22,7 +22,6 @@ class Config:
     
     # Server settings
     MCP_SCOPE: str = os.getenv("MCP_SCOPE", "mcp:tools")
-    OAUTH_STRICT: bool = os.getenv("OAUTH_STRICT", "false").lower() in ("true", "1", "yes")
     TRANSPORT: str = os.getenv("TRANSPORT", "streamable-http")
     
     @property

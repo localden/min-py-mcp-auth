@@ -16,7 +16,7 @@ This server acts as a **Resource Server (RS)** that:
 - Provides RFC 9728 Protected Resource Metadata
 - Validates access tokens via Authorization Server introspection
 - Serves MCP tools that require authentication
-- Supports both basic and strict OAuth validation modes
+- Always enforces audience ("aud") validation against the resource server URL
 
 ## Installation
 
@@ -70,7 +70,6 @@ OAUTH_CLIENT_SECRET=your-secret-here
 
 # Server Settings
 MCP_SCOPE=mcp
-OAUTH_STRICT=false
 TRANSPORT=streamable-http
 ```
 
@@ -86,7 +85,6 @@ TRANSPORT=streamable-http
 | `OAUTH_CLIENT_ID` | `mcp-server` | OAuth client identifier |
 | `OAUTH_CLIENT_SECRET` | (empty) | OAuth client secret |
 | `MCP_SCOPE` | `mcp` | Required OAuth scope |
-| `OAUTH_STRICT` | `false` | Enable RFC 8707 resource validation |
 | `TRANSPORT` | `streamable-http` | Transport type (`sse` or `streamable-http`) |
 
 ## Usage
@@ -140,7 +138,6 @@ AUTH_PORT=443
 AUTH_REALM=production
 OAUTH_CLIENT_ID=mcp-production
 OAUTH_CLIENT_SECRET=super-secret-key
-OAUTH_STRICT=true
 TRANSPORT=streamable-http
 ```
 
